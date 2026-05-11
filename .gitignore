@@ -9,5 +9,6 @@ Assignment 5/Finish Code/glm/
 
 #排除所有編譯後產生的執行檔
 *.exe
-#排除所有由程式輸出的 svg 檔案
+#排除所有由程式輸出的 svg 檔案(不包含老師提供之 sample_out 的 svg)
 *.svg
+!**/test data/*.svg
