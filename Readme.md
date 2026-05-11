@@ -4,7 +4,7 @@ Intro: Click [here](https://github.com/alexsuyou/Data-Structure/blob/main/Assign
 * Fatorial: Click [here](https://github.com/alexsuyou/Data-Structure/tree/main/Assignment%201/Practice%202)
 ## Assignment 2
 Intro: Click [here](https://github.com/alexsuyou/Data-Structure/tree/main/Assignment%202/Introduction.pdf)
-* establishment of the Set Class: Click [here](https://github.com/alexsuyou/Data-Structure/tree/main/Assignment%202)
+* Establishment of the Set Class: Click [here](https://github.com/alexsuyou/Data-Structure/tree/main/Assignment%202)
 ## Assignment 3
 Intro: Click [here](https://github.com/alexsuyou/Data-Structure/blob/main/Assignment%203/Introduction.pdf)
 * L-system: Click [here](https://github.com/alexsuyou/Data-Structure/tree/main/Assignment%203)
