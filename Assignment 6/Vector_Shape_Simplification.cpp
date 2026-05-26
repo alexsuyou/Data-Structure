@@ -1,5 +1,6 @@
-#include<iostream>
-#include<algorithm> // for abs
+#include <iostream>
+#include <algorithm> // for abs
+using namespace std;
 
 class DLinkedList;
 class DLinkedNode{
@@ -17,8 +18,7 @@ class DLinkedNode{
             prev = nullptr;
             next = nullptr;
         }
-        ~DLinkedNode(); // Destructor
-        
+        ~DLinkedNode(){}; // Destructor
 
 };
 class DLinkedList{
@@ -26,11 +26,24 @@ class DLinkedList{
         DLinkedNode *first; // the pointer point to the first node of linked list
         DLinkedNode *last; // the pointer point to the last node of linked list
     public:
-        DLinkedList(); // Constructor
-        ~DLinkedList(); // Destructor
+        DLinkedList(){ // Constructor
+            first = nullptr;
+            last = nullptr;
+        }
+        ~DLinkedList();  // Destructor
         void Insert_Back(double x_val, double y_val);
         double CountArea(DLinkedNode *apex);
 };
+
+DLinkedList::~DLinkedList(){  // Destructor
+    DLinkedNode* delNode = this->first;
+    while(first != nullptr){
+        delNode = first;
+        first = first->next;
+        delete delNode;
+    }
+    last = nullptr;
+}
 
 void DLinkedList::Insert_Back(double x_val, double y_val){
     if(first){ // if the double linked list is not empty
@@ -60,4 +73,6 @@ double DLinkedList::CountArea(DLinkedNode *apex){
 }
 
 
-int main(){}
+int main(){
+    cout << "test";
+}
