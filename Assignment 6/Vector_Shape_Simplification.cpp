@@ -43,14 +43,14 @@ class DLinkedList{
 
 class MinHeap{
     private:
-        DLinkedList dlist; // Store the linked list we want to sort
+        DLinkedList* dlist; // Store the linked list we want to sort
         DLinkedNode** heap; // a pointer point to the array which store the pointer of the linked list node
         int capacity; // the maximum capacity of heap
         int heap_size; // the number of current nodes in the heap tree
     public:
-        MinHeap(DLinkedList& list){ // Constructor
+        MinHeap(DLinkedList* list){ // Constructor
             dlist = list;
-            capacity = dlist.dlink_size - 2; // the capacity of heap may exclude the first and last linked list node
+            capacity = dlist->dlink_size - 2; // the capacity of heap may exclude the first and last linked list node
             heap_size = capacity;
             heap = new DLinkedNode*[capacity + 1]; // we start the index from 1 to capacity
             initializeFromLinkList(); // when MinHeap construct, initialize the heap array from linked list
@@ -103,12 +103,12 @@ double DLinkedList::CountArea(DLinkedNode *apex){
 }
 
 void MinHeap::initializeFromLinkList(){
-    if(dlist.dlink_size < 3){ // if link size is last then 3, it means there are only two node(first and last node)
+    if(dlist->dlink_size < 3){ // if link size is last then 3, it means there are only two node(first and last node)
         return;
     }
 
-    DLinkedNode* curr = dlist.first->next;
-    while(curr->next != dlist.last){
+    DLinkedNode* curr = dlist->first->next;
+    while(curr->next != dlist->last){
         heap_size += 1; 
         heap[heap_size] = curr; // put the linked node pointer in the heap array in heap_size index
         curr->heap_index = heap_size; // set the heap_index of linked list node as heap_size
@@ -162,12 +162,12 @@ void MinHeap::heapSort(int target_num){
         heap_size = i;
 
         // Update the area and adjust the heap tree
-        if(temp != dlist.first){
-            dlist.CountArea(temp);
+        if(temp != dlist->first){
+            dlist->CountArea(temp);
             adjust(temp->heap_index);
         }
-        if(temp->next != dlist.last || temp->next != nullptr){
-            dlist.CountArea(temp->next);
+        if(temp->next != dlist->last || temp->next != nullptr){
+            dlist->CountArea(temp->next);
             adjust(temp->next->heap_index);
         }
 
