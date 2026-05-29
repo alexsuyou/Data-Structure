@@ -14,3 +14,6 @@ Intro: Click [here](https://github.com/alexsuyou/Data-Structure/blob/main/Assign
 ## Assignment 5
 Intro: Click [here](https://github.com/alexsuyou/Data-Structure/blob/main/Assignment%205/Introduction.pdf)
 * QuadTree: Click [here](https://github.com/alexsuyou/Data-Structure/blob/main/Assignment%205)
+## Assignment 6
+Intro: Click [here](https://github.com/alexsuyou/Data-Structure/blob/main/Assignment%206/Introduction.pdf)
+* Vector Shape Simplification: Click [here](https://github.com/alexsuyou/Data-Structure/blob/main/Assignment%206)
