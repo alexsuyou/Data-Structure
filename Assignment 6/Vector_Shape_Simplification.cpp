@@ -1,5 +1,11 @@
+/***********************************************************************
+* Author: 蘇祐增 (I133040010)
+* Date: May 29, 2026
+* Purpose: Assignment 6 - Vector Shape Simplification
+***********************************************************************/
 #include <iostream>
 #include <algorithm> // for abs
+#include <iomanip> // for fixed and setprecision
 using namespace std;
 
 class DLinkedList;
@@ -7,6 +13,7 @@ class MinHeap;
 class DLinkedNode{
 	friend class DLinkedList;
     friend class MinHeap;
+    friend ostream& operator<<(ostream& os, DLinkedList* link); // overload operator <<
     private:
         double x, y; // x and y cooridinate
         double area; // the area consist from this node, previous node and next node
@@ -27,6 +34,7 @@ class DLinkedNode{
 };
 class DLinkedList{
     friend class MinHeap;
+    friend ostream& operator<<(ostream& os, DLinkedList* link); // overload operator <<
     private:
         DLinkedNode *first; // the pointer point to the first node of linked list
         DLinkedNode *last; // the pointer point to the last node of linked list
@@ -35,10 +43,11 @@ class DLinkedList{
         DLinkedList(){ // Constructor
             first = nullptr;
             last = nullptr;
+            dlink_size = 0;
         }
         ~DLinkedList();  // Destructor
-        void Insert_Back(double x_val, double y_val);
-        double CountArea(DLinkedNode *apex);
+        void Insert_Back(double x_val, double y_val); // insert node in the back of the linked list
+        double CountArea(DLinkedNode *apex); // count the point of the area
 };
 
 class MinHeap{
@@ -50,6 +59,14 @@ class MinHeap{
     public:
         MinHeap(DLinkedList* list){ // Constructor
             dlist = list;
+
+            if (dlist == nullptr || dlist->dlink_size < 3) {
+                capacity = 0;
+                heap_size = 0;
+                heap = nullptr; 
+                return;
+            }
+
             capacity = dlist->dlink_size - 2; // the capacity of heap may exclude the first and last linked list node
             heap_size = capacity;
             heap = new DLinkedNode*[capacity + 1]; // we start the index from 1 to capacity
@@ -58,9 +75,19 @@ class MinHeap{
         ~MinHeap(){
             delete [] heap;
         };
-        void initializeFromLinkList(); // put the pointer of Linked list node in heap array from ptr to the last node
-        void adjust(const int root); // adjust the heap tree
-        void heapSort(int target_num); // heap sort
+
+        // calculates the initial triangle area for each internal node 
+        // and populates the heap array with their pointers
+        void initializeFromLinkList(); 
+
+        void adjust_TopToButtom(const int root); // adjust the heap tree from top to buttom
+        void adjust_ButtomToTop(const int root); // adjust the heap tree from buttom to top
+        
+        // when recalculate the triangle area, update the heap tree
+        // using adjust_TopToButtom and adjust_ButtomToTop
+        void update(const int index);
+
+        void simplify(int target_num); // use heap sort to simplify the node
 };
 
 DLinkedList::~DLinkedList(){  // Destructor
@@ -71,6 +98,15 @@ DLinkedList::~DLinkedList(){  // Destructor
         delete delNode;
     }
     last = nullptr;
+}
+
+ostream& operator<<(ostream& os, DLinkedList* link){
+    DLinkedNode* curr = link->first;
+    while(curr != nullptr){
+        os << fixed << setprecision(2) << curr->x << "," <<curr->y << endl;
+        curr = curr->next;
+    }
+    return os;
 }
 
 void DLinkedList::Insert_Back(double x_val, double y_val){
@@ -108,79 +144,120 @@ void MinHeap::initializeFromLinkList(){
     }
 
     DLinkedNode* curr = dlist->first->next;
-    while(curr->next != dlist->last){
-        heap_size += 1; 
-        heap[heap_size] = curr; // put the linked node pointer in the heap array in heap_size index
-        curr->heap_index = heap_size; // set the heap_index of linked list node as heap_size
+    int curr_heap_index = 0;
+    while(curr != dlist->last){
+        curr->area = dlist->CountArea(curr); // count the triangle area
+        curr_heap_index += 1; 
+        heap[curr_heap_index] = curr; // put the linked node pointer in the heap array in heap_size index
+        curr->heap_index = curr_heap_index; // set the heap_index of linked list node as heap_size
         curr = curr->next;
     }
 }
 
-void MinHeap::adjust(const int root){
-    // root: the first root we want to adjust
+void MinHeap::adjust_TopToButtom(const int root){
+    // root: the first root we want to adjust from top to buttom
     DLinkedNode* temp = heap[root]; // store the linked list node pointer at the root of the heap
     int temp_index = root; // store the index of the root
     for(int i = 2* root; i <= heap_size; i *= 2){
-        if(heap[i]->area > heap[i + 1]->area){ // find the child node with the minimum triangle area
+        if(i < heap_size && heap[i]->area > heap[i + 1]->area){ // find the child node with the minimum triangle area
             i++;
         } 
-        if(temp->area < heap[i]->area){ 
-            // if the area of child node is large than temp, then change with the parent node
-            heap[i / 2] = heap[i];
-            heap[i / 2]->heap_index = temp_index;
+        if(temp->area <= heap[i]->area){ 
+            // if the area of temp node is small than child, then break
+            break;
         }
+        heap[i / 2] = heap[i];
+        heap[i / 2]->heap_index = temp_index;
         temp_index = i; // update the next heap root we want to sort
     }
-    heap[temp_index / 2] = temp;
+    heap[temp_index] = temp;
+    heap[temp_index]->heap_index = temp_index;
 }
 
-void MinHeap::heapSort(int target_num){
+void MinHeap::adjust_ButtomToTop(const int root){
+    // root: the first root we want to adjust form buttom to top
+    DLinkedNode* temp = heap[root]; // store the linked list node pointer at the root of the heap
+    int temp_index = root; // store the index of the root
+    while(temp_index != 1 && heap[temp_index / 2]->area > temp->area){
+        heap[temp_index] = heap[temp_index / 2];
+        heap[temp_index]->heap_index = temp_index;
+        temp_index /= 2; // update the next heap root we want to sort
+    }
+    heap[temp_index] = temp;
+    heap[temp_index]->heap_index = temp_index;
+}
+
+void MinHeap::update(const int index){ 
+    // when recalculate the triangle area, update the heap tree
+    // using adjust_TopToButtom and adjust_ButtomToTop
+    if(index >= 1 && index <= heap_size){
+        adjust_TopToButtom(index);
+        adjust_ButtomToTop(index);
+    }
+}
+
+void MinHeap::simplify(int target_num){
     // target_num: the output number of points
     // When the unsorted node(heap_size) is as same as target_num - 2, we stop sort.
     for(int i = heap_size / 2; i >= 1; i--){ // construct heap tree
-        adjust(i);
+        adjust_TopToButtom(i);
     }
-    for(int i = heap_size - 1; i >=  1; i --){ // sort the heap tree
+
+    // Detemine if heap_size is as same as target_num - 2
+    while(heap_size > target_num - 2){ // sort the heap tree
         
-        // Swap
-        // swap the root of heap tree(heap[1]) and the last node of heap tree(heap[i + 1])
-        DLinkedNode* removeNode = heap[i + 1];
-        heap[i + 1] = heap[1];
-        heap[1] = removeNode;
-        // also, swap the heap_index of both node after we change heap array
-        heap[i + 1]->heap_index = i + 1;
+        // move the last node of heap tree(heap[heap_size]) to the root of heap tree(heap[1]) 
+        DLinkedNode* removeNode = heap[1];
+        heap[1] = heap[heap_size];
         heap[1]->heap_index = 1;
 
+        // update the size of heap tree
+        heap_size -= 1;
+
+        adjust_TopToButtom(1);
 
         // Update the linked list
-        // The next pointer of prev node of heap[i + 1] point to the next node of heap[i + 1]
-        DLinkedNode* temp = heap[i + 1]->prev; // update the temp to the prev node of heap[i + 1]
-        temp->next = temp->next->next;
-        temp->next->prev = temp;
+        DLinkedNode* tempPrev = removeNode->prev; // the pointer point to the prev node of the remove node
+        DLinkedNode* tempNext = removeNode->next; // the pointer point to the next node of the remove node
+        tempPrev->next = tempNext;
+        tempNext->prev = tempPrev;
 
-        // Update the size of heap tree
-        heap_size = i;
+        // delete the remove node
+        delete removeNode;
+
+
 
         // Update the area and adjust the heap tree
-        if(temp != dlist->first){
-            dlist->CountArea(temp);
-            adjust(temp->heap_index);
+        if(tempPrev != dlist->first){
+            tempPrev->area = dlist->CountArea(tempPrev);
+            update(tempPrev->heap_index);
+            
         }
-        if(temp->next != dlist->last || temp->next != nullptr){
-            dlist->CountArea(temp->next);
-            adjust(temp->next->heap_index);
-        }
-
-        // Detemine if heap_size is as same as target_num - 2
-        if(heap_size == target_num - 2){ // if current heap_size is as same as target_num - 2, then break the loop
-            break;
-        }else{
-            adjust(1);
+        if(tempNext != dlist->last){
+            tempNext->area = dlist->CountArea(tempNext);
+            update(tempNext->heap_index);
         }
         
     }
 }
 
 int main(){
-    cout << "test";
+    int test_case;
+    cin >> test_case;
+    for(int i = 0; i < test_case; i++){
+        int init_point_num, target_point_num;
+        cin >> target_point_num >> init_point_num;
+        DLinkedList* vector_list = new DLinkedList();
+        for(int j = 0; j < init_point_num; j++){
+            double x, y; // input the x cooridinate and y cooridinate of esch point
+            cin >> x >> y;
+            vector_list->Insert_Back(x, y);
+        }
+        MinHeap minheap(vector_list);
+        minheap.simplify(target_point_num);
+        cout << vector_list;
+        cout << endl;
+
+        delete vector_list; // in case memory leakage
+    }
 }
